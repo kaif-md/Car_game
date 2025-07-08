@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+
 import './App.css';
 
 const App = () => {
@@ -44,11 +45,9 @@ const App = () => {
     if (!gameStarted || gameOver) return;
 
     const gameLoop = (timestamp) => {
-      // Move road (creates illusion of car moving forward)
       setRoadPosition(prev => (prev + GAME_SPEED) % 60);
       
-      // Generate new obstacles
-      if (timestamp - lastObstacleTime.current > 2000) { // Every 2 seconds
+      if (timestamp - lastObstacleTime.current > 2000) {
         const newObstacle = {
           id: Date.now(),
           x: Math.floor(Math.random() * (ROAD_WIDTH - CAR_WIDTH)),
@@ -58,18 +57,16 @@ const App = () => {
         lastObstacleTime.current = timestamp;
       }
       
-      // Move obstacles
       setObstacles(prev => 
         prev.map(obstacle => ({
           ...obstacle,
           y: obstacle.y + GAME_SPEED
-        })).filter(obstacle => obstacle.y < 600) // Remove obstacles that are off screen
+        })).filter(obstacle => obstacle.y < 600)
       );
       
-      // Check for collisions
       const carRect = {
         x: carPosition,
-        y: 500, // Fixed vertical position for the car
+        y: 500,
         width: CAR_WIDTH,
         height: CAR_HEIGHT
       };
@@ -96,7 +93,6 @@ const App = () => {
         return;
       }
       
-      // Increase score
       setScore(prev => prev + 1);
       
       animationFrameId.current = requestAnimationFrame(gameLoop);
@@ -121,50 +117,61 @@ const App = () => {
   };
 
   return (
-    <div className="app">
-      <h1>React Car Game</h1>
+    <div className="app container-fluid d-flex flex-column align-items-center justify-content-center vh-100 bg-light">
+      <h1 className="text-center mb-4 text-primary">React Car Game</h1>
       
       {!gameStarted ? (
-        <div className="start-screen">
-          <p>Use arrow keys to move left and right</p>
-          <button onClick={startGame}>Start Game</button>
+        <div className="start-screen card p-4 text-center">
+          <h2 className="mb-3">Welcome!</h2>
+          <p className="mb-4">Use arrow keys to move left and right</p>
+          <button 
+            onClick={startGame} 
+            className="btn btn-primary btn-lg"
+          >
+            Start Game
+          </button>
         </div>
       ) : gameOver ? (
-        <div className="game-over-screen">
-          <h2>Game Over!</h2>
-          <p>Your score: {score}</p>
-          <p>High score: {highScore}</p>
-          <button onClick={startGame}>Play Again</button>
+        <div className="game-over-screen card p-4 text-center">
+          <h2 className="text-danger mb-3">Game Over!</h2>
+          <p className="h5">Your score: <span className="text-success">{score}</span></p>
+          <p className="h5">High score: <span className="text-info">{highScore}</span></p>
+          <button 
+            onClick={startGame} 
+            className="btn btn-success btn-lg mt-3"
+          >
+            Play Again
+          </button>
         </div>
       ) : (
-        <div className="game-container">
-          <div className="score-display">Score: {score}</div>
+        <div className="game-container d-flex flex-column align-items-center">
+          <div className="score-display h4 mb-3 p-2 bg-dark text-white rounded">
+            Score: <span className="text-warning">{score}</span>
+          </div>
           <div 
             ref={gameAreaRef} 
-            className="game-area"
-            style={{ width: `${ROAD_WIDTH}px` }}
+            className="game-area position-relative bg-dark border border-4 border-secondary rounded"
+            style={{ width: `${ROAD_WIDTH}px`, height: '600px' }}
           >
-            {/* Road with moving stripes */}
             <div 
-              className="road" 
+              className="road position-absolute w-100 h-100"
               style={{ backgroundPositionY: `${roadPosition}px` }}
             ></div>
             
-            {/* Player car */}
             <div 
-              className="car" 
+              className="car position-absolute bg-danger rounded"
               style={{ 
                 left: `${carPosition}px`,
+                bottom: '20px',
                 width: `${CAR_WIDTH}px`,
                 height: `${CAR_HEIGHT}px`
               }}
             ></div>
             
-            {/* Obstacles */}
             {obstacles.map(obstacle => (
               <div 
                 key={obstacle.id}
-                className="obstacle"
+                className="obstacle position-absolute bg-primary rounded"
                 style={{
                   left: `${obstacle.x}px`,
                   top: `${obstacle.y}px`,
